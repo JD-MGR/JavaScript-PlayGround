@@ -1,0 +1,68 @@
+.display{
+   width: 100%;
+  /* height: 100px;
+   width: 380px;*/
+    background-color: black;
+    border: none;
+}
+#result{
+    margin-top: -5px;
+    color: whitesmoke;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 40px;
+    text-align: right;
+}
+#calculation{
+   color: whitesmoke;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 20px;
+    text-align: right;  
+}
+.row1,.row2,.row3,.row4,.row5{
+    width: 100%;
+    display: grid;
+    grid-template-columns:repeat(4, 90px);
+    gap:5px;
+    padding: 5px;
+  
+}
+button{
+    aspect-ratio: 1 / 1;
+    border-radius:50%;
+    color: #FFFFFF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: xx-large;
+    font-weight: 400;
+    border: none;
+}
+
+.calcbody{
+    padding: 25px;
+    width: 425px;
+    background-color: black;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 5rem;
+    display: flex;
+  flex-direction: column;
+  overflow: hidden;
+   box-sizing: border-box;
+}
+.number{
+    background-color: #333333;
+}
+.util{
+    background-color: #A5A5A5;
+}
+.symbol{
+    background-color: #FF9F0A;
+}
+#historyIcon{
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+#icon{
+    background-color: transparent;
+}

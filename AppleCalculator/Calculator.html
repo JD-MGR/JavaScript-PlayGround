@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Calculator</title>
+	<link rel="stylesheet" href="Calculator.css">
+
+</head>
+<body>
+	<div class="calcbody">
+    <div id="historyIcon"><button onclick="retreive()" id ="icon"><img src="TabBar.svg" alt="" width="25" height="23"></button></div>
+	<h1 id="result">0</h1><p id="calculation"></p>
+	<div class="button-layout">
+	<div class="row1">
+		<button onclick="backspace()" class="util" >⌫</button>
+		<button onclick="allClear()" id="allclear" class="util" >AC</button>
+		<button id="modulo" class="util btn" >%</button>
+		<button id="divide" class="symbol btn" >/</button>
+	</div>
+	<div class="row2">
+	<button id="seven" class="number btn" >7</button>
+	<button id="eight" class="number btn" >8</button>
+	<button id="nine" class="number btn" >9</button>
+	<button id="multiply" class="symbol btn" >x</button>
+	</div>
+	<div class="row3">
+	<button id="four" class="number btn" >4</button>
+	<button id="five" class="number btn" >5</button>
+	<button id="six" class="number btn" >6</button>
+	<button id="minus" class="symbol btn" >-</button>
+	</div>
+	<div class="row4">
+	<button id="one" class="number btn" >1</button>
+	<button id="two" class="number btn" >2</button>
+	<button id="three" class="number btn" >3</button>
+	<button id="plus" class="symbol btn" >+</button>
+	</div>
+	<div class="row5">
+	<button id="symbol" class="number btn" >+/-</button>
+	<button id="zero" class="number btn" >0</button>
+	<button id="dot" class="number btn" >.</button>
+	<button onclick="operate()" class="symbol" >=</button>
+</div>
+	</div>
+	</div>
+<script>
+const calculation=document.getElementById("calculation");
+let expression = "";
+document.querySelectorAll(".btn").forEach(button=>{
+	if (button.id === "symbol") return;
+	button.addEventListener("click",()=>{
+		const value = button.textContent;
+		 expression += value;
+		calculation.textContent=expression;
+	});
+});
+
+const plusMinusButton = document.getElementById("symbol");
+plusMinusButton.addEventListener("click", toggleSign);
+function tokenizeExpression(expr) {
+    const tokens = [];
+    let i = 0;
+
+    while (i < expr.length) {
+        const ch = expr[i];
+        if (ch === ' ') {
+            i++;
+            continue;
+        }
+
+        if (ch === '+' || ch === 'x' || ch === '/' || ch === '%' || ch === '(' || ch === ')') {
+            tokens.push(ch);
+            i++;
+            continue;
+        }
+
+        if (ch === '-') {
+            const prev = tokens.length === 0 ? null : tokens[tokens.length - 1];
+            if (prev === null || ['+', '-', 'x', '/', '%', '('].includes(prev)) {
+                let num = '-';
+                let dotCount = 0;
+                i++;
+                while (i < expr.length && ((expr[i] >= '0' && expr[i] <= '9') || expr[i] === '.')) {
+                    if (expr[i] === '.') {
+                        dotCount++;
+                        if (dotCount > 1) break;
+                    }
+                    num += expr[i];
+                    i++;
+                }
+                if (num === '-' || num === '-.') {
+                    return null;
+                }
+                tokens.push(num);
+                continue;
+            }
+            tokens.push(ch);
+            i++;
+            continue;
+        }
+
+        if ((ch >= '0' && ch <= '9') || ch === '.') {
+            let num = '';
+            let dotCount = 0;
+            while (i < expr.length && ((expr[i] >= '0' && expr[i] <= '9') || expr[i] === '.')) {
+                if (expr[i] === '.') {
+                    dotCount++;
+                    if (dotCount > 1) break;
+                }
+                num += expr[i];
+                i++;
+            }
+            tokens.push(num);
+            continue;
+        }
+
+        return null;
+    }
+
+    return tokens;
+}
+
+function isOperator(token) {
+    return token === '+' || token === '-' || token === 'x' || token === '/' || token === '%';
+}
+
+function precedence(op) {
+    return op === 'x' || op === '/' || op === '%' ? 2 : 1;
+}
+
+function infixToRPN(tokens) {
+    const output = [];
+    const stack = [];
+
+    for (const token of tokens) {
+        if (isOperator(token)) {
+            while (
+                stack.length &&
+                isOperator(stack[stack.length - 1]) &&
+                precedence(stack[stack.length - 1]) >= precedence(token)
+            ) {
+                output.push(stack.pop());
+            }
+            stack.push(token);
+        } else if (token === '(') {
+            stack.push(token);
+        } else if (token === ')') {
+            while (stack.length && stack[stack.length - 1] !== '(') {
+                output.push(stack.pop());
+            }
+            if (!stack.length) {
+                return null;
+            }
+            stack.pop();
+        } else {
+            output.push(token);
+        }
+    }
+
+    while (stack.length) {
+        const top = stack.pop();
+        if (top === '(' || top === ')') {
+            return null;
+        }
+        output.push(top);
+    }
+
+    return output;
+}
+
+function evaluateRPN(rpn) {
+    const stack = [];
+    for (const token of rpn) {
+        if (isOperator(token)) {
+            if (stack.length < 2) return NaN;
+            const b = stack.pop();
+            const a = stack.pop();
+            stack.push(evaluate(a, b, token));
+        } else {
+            const value = parseFloat(token);
+            if (isNaN(value)) return NaN;
+            stack.push(value);
+        }
+    }
+    return stack.length === 1 ? stack[0] : NaN;
+}
+function operate(){
+    if(expression==='143'){
+        document.getElementById("result").textContent = "I Love You";
+        return;
+     }
+     localStorage.setItem("expression",expression);
+    const tokens = tokenizeExpression(expression);
+    if (!tokens) {
+        document.getElementById("result").textContent = "Invalid Expression";
+        return;
+    }
+
+    const rpn = infixToRPN(tokens);
+    if (!rpn) {
+        document.getElementById("result").textContent = "Invalid Expression";
+        return;
+    }
+
+    const result = evaluateRPN(rpn);
+    if (isNaN(result)) {
+        document.getElementById("result").textContent = "Invalid Numbers";
+        return;
+    }
+    if(result===143){
+        document.getElementById("result").textContent = "I Love You";
+        return;
+     }
+    document.getElementById("result").textContent = result;
+    expression = result.toString();
+    localStorage.setItem("result",result);
+}
+function evaluate(exp1,exp2,symbol){
+switch(symbol){
+case '+':
+	return exp1+exp2;
+
+case '-':
+	return exp1-exp2;
+	
+case 'x':
+	return exp1*exp2;
+	
+case '/':
+	return exp1/exp2;
+case '%':
+	return exp1%exp2;
+}
+}
+let checkValidation=0;
+	function toggleSign() {
+    if (!expression) return;
+
+    const match = expression.match(/-?\d*\.?\d+$/);
+    if (!match) return;
+
+    const number = match[0];
+    const startIndex = match.index;//returns the index where we have the second expression
+
+    let toggled;
+    if (number.startsWith("-")) {
+        toggled = '+'+number.slice(1);   // remove minus because it returns the string after the 0 
+    } else if(number.startsWith("+")||number.startsWith("")){   // if the number starts with plus or if the number is in the form of (-number  )
+         toggled = '-'+number.slice(1);   // remove plus{
+        toggled = "("+"-" + number+")";      // add minus
+    }
+	else{
+		toggled=number;
+	}
+    expression =
+        expression.slice(0, startIndex) + toggled; 
+
+    calculation.textContent = expression;
+}
+
+
+function backspace(){
+	expression=expression.substring(0,expression.length-1);
+	const calculation=document.getElementById("calculation");
+	calculation.textContent=expression;
+}
+function allClear(){
+	const result=document.getElementById("result");
+	result.textContent=0;
+	const calculation=document.getElementById("calculation");
+	calculation.textContent="";
+	expression="";
+}
+const allClearButton=document.getElementById("allclear");
+allClearButton.addEventListener("dblclick",allClearHistory);
+function allClearHistory(){
+	const result=document.getElementById("result");
+	result.textContent=0;
+	const calculation=document.getElementById("calculation");
+	calculation.textContent="";
+	expression="";
+    localStorage.clear();
+}
+function retreive(){
+    const history=localStorage.getItem("result");
+    const historycalculation=localStorage.getItem("expression");
+    if(history){
+        document.getElementById("result").textContent=history;
+        document.getElementById("calculation").textContent=historycalculation;
+        expression=historycalculation;
+        // expression=history;
+        // result.textContent=expression;
+        // let expression2=historycalculation;
+        // calculation.textContent=expression2;
+    }
+    else{
+        document.getElementById("result").textContent="No History Found";
+}
+}
+	</script>
+ </body>
+</html>
